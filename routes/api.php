@@ -10,3 +10,7 @@ Route::get('/user', function (Request $request) {
 Route::post('/connection_token', [PaymentController::class, 'createConnectionToken']);
 Route::post('/create_payment_intent', [PaymentController::class, 'createPaymentIntent']);
 Route::post('/create-payment-link', [PaymentController::class, 'createPaymentLink']);
+
+Route::get('/test', function () {
+    return response()->json(['message' => 'Test route is working!']);
+});
