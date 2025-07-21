@@ -9,4 +9,5 @@ Route::get('/user', function (Request $request) {
 })->middleware('auth:sanctum');
 Route::post('/connection_token', [PaymentController::class, 'createConnectionToken']);
 Route::post('/create_payment_intent', [PaymentController::class, 'createPaymentIntent']);
+Route::post('/retrieve_payment_method', [PaymentController::class, 'retrievePaymentMethod']);
 Route::post('/create-payment-link', [PaymentController::class, 'createPaymentLink']);

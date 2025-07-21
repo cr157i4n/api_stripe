@@ -3,10 +3,12 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use Stripe\Stripe;
 use Stripe\Checkout\Session;
 use Stripe\Terminal\ConnectionToken;
 use Stripe\PaymentIntent;
+use Stripe\PaymentMethod;
 
 class PaymentController extends Controller
 {
@@ -15,59 +17,71 @@ class PaymentController extends Controller
         Stripe::setApiKey(config('services.stripe.secret_key'));
     }
 
-    /**
-     * Generate a connection token for Stripe Terminal
-     */
     public function createConnectionToken(Request $request)
     {
         try {
             $token = ConnectionToken::create();
-            \Log::info('Connection token generated: ' . $token->secret);
             return response()->json(['secret' => $token->secret]);
         } catch (\Exception $e) {
-            \Log::error('Error generating connection token: ' . $e->getMessage());
             return response()->json(['error' => $e->getMessage()], 500);
         }
     }
 
-    /**
-     * Create a payment intent for Stripe Terminal
-     */
     public function createPaymentIntent(Request $request)
     {
         try {
             $data = $request->validate([
                 'amount' => 'integer|min:1',
                 'simulate' => 'boolean',
+                'currency' => 'string|in:usd,eur',
             ]);
 
             $amount = $data['amount'] ?? 1000;
             $simulate = $data['simulate'] ?? false;
+            $currency = $data['currency'] ?? 'eur';
 
             $paymentIntentParams = [
                 'amount' => $amount,
-                'currency' => 'usd',
-                'payment_method_types' => ['card'],
+                'currency' => $currency,
+                'payment_method_types' => ['card_present'],
                 'capture_method' => 'automatic',
+                'metadata' => [
+                    'source' => 'tap_to_pay',
+                    'environment' => $simulate ? 'test' : 'live'
+                ]
             ];
 
-            if ($simulate) {
-                $paymentIntentParams['payment_method'] = 'pm_card_visa';
-                $paymentIntentParams['confirmation_method'] = 'manual';
-            }
-
-            $paymentIntent = PaymentIntent::create($paymentIntentParams);
-            \Log::info('PaymentIntent created: ' . $paymentIntent->client_secret);
+            $paymentIntent = \Stripe\PaymentIntent::create($paymentIntentParams);
             return response()->json(['client_secret' => $paymentIntent->client_secret]);
         } catch (\Exception $e) {
-            \Log::error('Error creating payment intent: ' . $e->getMessage());
             return response()->json(['error' => $e->getMessage()], 500);
         }
     }
 
-    /**
-     * Create a checkout session for payment link
-     */
+    public function retrievePaymentMethod(Request $request)
+    {
+        try {
+            $data = $request->validate([
+                'payment_method_id' => 'required|string',
+            ]);
+            $paymentMethod = PaymentMethod::retrieve($data['payment_method_id']);
+            $response = [
+                'id' => $paymentMethod->id,
+                'card' => [
+                    'last4' => $paymentMethod->card->last4 ?? 'N/A',
+                    'brand' => $paymentMethod->card->brand ?? 'N/A',
+                    'exp_month' => $paymentMethod->card->exp_month ?? 'N/A',
+                    'exp_year' => $paymentMethod->card->exp_year ?? 'N/A',
+                    'country' => $paymentMethod->card->country ?? 'N/A',
+                    'funding' => $paymentMethod->card->funding ?? 'N/A'
+                ]
+            ];
+            return response()->json($response);
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
+    }
+    
     public function createPaymentLink(Request $request)
     {
         try {
