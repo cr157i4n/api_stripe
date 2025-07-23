@@ -34,11 +34,13 @@ class PaymentController extends Controller
                 'amount' => 'integer|min:1',
                 'simulate' => 'boolean',
                 'currency' => 'string|in:usd,eur',
+                'description' => 'string|max:255|nullable',
             ]);
 
             $amount = $data['amount'] ?? 1000;
             $simulate = $data['simulate'] ?? false;
             $currency = $data['currency'] ?? 'eur';
+            $description = $data['description'] ?? 'Pago genérico';
 
             $paymentIntentParams = [
                 'amount' => $amount,
@@ -47,11 +49,12 @@ class PaymentController extends Controller
                 'capture_method' => 'automatic',
                 'metadata' => [
                     'source' => 'tap_to_pay',
-                    'environment' => $simulate ? 'test' : 'live'
-                ]
+                    'environment' => $simulate ? 'test' : 'live',
+                    'description' => $description,
+                ],
             ];
 
-            $paymentIntent = \Stripe\PaymentIntent::create($paymentIntentParams);
+            $paymentIntent = PaymentIntent::create($paymentIntentParams);
             return response()->json(['client_secret' => $paymentIntent->client_secret]);
         } catch (\Exception $e) {
             return response()->json(['error' => $e->getMessage()], 500);
