@@ -11,3 +11,4 @@ Route::post('/connection_token', [PaymentController::class, 'createConnectionTok
 Route::post('/create_payment_intent', [PaymentController::class, 'createPaymentIntent']);
 Route::post('/retrieve_payment_method', [PaymentController::class, 'retrievePaymentMethod']);
 Route::post('/create-payment-link', [PaymentController::class, 'createPaymentLink']);
+Route::post('/store_payment_details', [PaymentController::class, 'storePaymentDetails']);

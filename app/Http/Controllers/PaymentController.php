@@ -120,4 +120,50 @@ class PaymentController extends Controller
             ], 500);
         }
     }
+
+    public function storePaymentDetails(Request $request)
+    {
+        try {
+            $data = $request->validate([
+                'payment_intent_id' => 'required|string',
+                'payment_method_id' => 'required|string',
+                'card_brand' => 'required|string',
+                'card_last4' => 'required|string',
+                'card_exp_month' => 'required|integer',
+                'card_exp_year' => 'required|integer',
+                'card_country' => 'required|string',
+                'card_funding' => 'required|string',
+                'amount' => 'required|numeric',
+                'currency' => 'required|string',
+                'status' => 'required|string',
+                'description' => 'string|max:255|nullable',
+            ]);
+
+            $tarjeta = json_encode([
+                'brand' => $data['card_brand'],
+                'last4' => $data['card_last4'],
+                'exp_month' => $data['card_exp_month'],
+                'exp_year' => $data['card_exp_year'],
+                'country' => $data['card_country'],
+                'funding' => $data['card_funding'],
+            ]);
+
+            $idCaja = 1;
+
+            \App\Models\Pago_Solicitude::create([
+                'state' => $data['status'],
+                'amount' => $data['amount'],
+                'description' => $data['description'],
+                'type_coin' => $data['currency'],
+                'tarjeta' => $tarjeta,
+                'id_caja' => $idCaja,
+                'id_stripe' => $data['payment_intent_id'],
+            ]);
+
+            return response()->json(['success' => true]);
+        } catch (\Exception $e) {
+            Log::error('Error storing payment details: ' . $e->getMessage());
+            return response()->json(['success' => false, 'error' => $e->getMessage()], 500);
+        }
+    }
 }
