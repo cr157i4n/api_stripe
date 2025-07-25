@@ -12,3 +12,8 @@ Route::post('/create_payment_intent', [PaymentController::class, 'createPaymentI
 Route::post('/retrieve_payment_method', [PaymentController::class, 'retrievePaymentMethod']);
 Route::post('/create-payment-link', [PaymentController::class, 'createPaymentLink']);
 Route::post('/store_payment_details', [PaymentController::class, 'storePaymentDetails']);
+
+
+Route::get('/test', function () {
+    return response()->json(['message' => 'Test route is working!']);
+});
