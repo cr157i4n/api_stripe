@@ -121,7 +121,7 @@ class PaymentController extends Controller
         }
     }
 
-    public function storePaymentDetails(Request $request)
+   public function storePaymentDetails(Request $request)
     {
         try {
             $data = $request->validate([
@@ -164,6 +164,26 @@ class PaymentController extends Controller
         } catch (\Exception $e) {
             Log::error('Error storing payment details: ' . $e->getMessage());
             return response()->json(['success' => false, 'error' => $e->getMessage()], 500);
+        }
+    }
+
+    public function getPaymentHistory(Request $request)
+    {
+        try {
+            $payments = \App\Models\Pago_Solicitude::all();
+            $paymentList = $payments->map(function ($payment) {
+                $tarjeta = json_decode($payment->tarjeta, true);
+                return [
+                    'id_stripe' => $payment->id_stripe,
+                    'date' => $payment->created_at->format('Y-m-d H:i:s'),
+                    'status' => $payment->state
+                ];
+            })->values();
+
+            return response()->json(['payments' => $paymentList]);
+        } catch (\Exception $e) {
+            Log::error('Error fetching payment history: ' . $e->getMessage());
+            return response()->json(['error' => $e->getMessage()], 500);
         }
     }
 }
