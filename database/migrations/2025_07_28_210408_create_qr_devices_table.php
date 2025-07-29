@@ -14,10 +14,15 @@ return new class extends Migration
         Schema::create('qr_devices', function (Blueprint $table) {
             $table->id();
             $table->foreignId('cashier_id')->constrained('cashiers')->onDelete('cascade');
-            $table->text('image_qr');
-            $table->enum('status', ['active', 'expired', ])->default('active');
+            $table->string('code', 6)->unique();
+            $table->longText('image_qr');
+            $table->enum('status', ['active', 'expired', 'used'])->default('active');
             $table->timestamp('expires_at')->nullable();
             $table->timestamps();
+
+            $table->index(['code', 'status']);
+            $table->index(['cashier_id', 'status']);
+            $table->index(['expires_at', 'status']);
         });
     }
 

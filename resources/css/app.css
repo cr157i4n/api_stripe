@@ -9,7 +9,7 @@
     /* Fuentes */
     --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif;
 
-
+    /* === COLORES PARA ADMINISTRADOR === */
     --color-teal-50: oklch(0.97 0.02 180);
     --color-teal-100: oklch(0.94 0.04 185);
     --color-teal-200: oklch(0.90 0.08 183);
@@ -27,6 +27,26 @@
     /* Color azul oscuro del logo */
     --color-navy-800: oklch(0.25 0.10 254);
     --color-navy-900: oklch(0.20 0.08 256);
+
+    /* === COLORES PARA CLIENTES === */
+    /* Azul océano  */
+    --color-ocean-50: oklch(0.97 0.02 185);
+    --color-ocean-100: oklch(0.94 0.04 187);
+    --color-ocean-200: oklch(0.90 0.08 186);
+    --color-ocean-300: oklch(0.85 0.12 184);
+    --color-ocean-400: oklch(0.80 0.15 183);
+    --color-ocean-500: oklch(0.75 0.18 181);
+    /* Color principal para clientes*/
+    --color-ocean-600: oklch(0.70 0.17 180);
+    --color-ocean-700: oklch(0.65 0.16 179);
+
+    /* Azul acero  */
+    --color-steel-500: oklch(0.40 0.13 252);
+    --color-steel-600: oklch(0.35 0.15 254);
+    --color-steel-700: oklch(0.30 0.13 256);
+    /* Color azul oscuro para fondos  */
+    --color-steel-800: oklch(0.25 0.10 258);
+    --color-steel-900: oklch(0.20 0.08 260);
 
     /* Transiciones */
     --ease-transition: cubic-bezier(0.3, 0, 0.3, 1);

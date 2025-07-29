@@ -16,12 +16,12 @@
 <body class="bg-gray-50 text-gray-800">
     <div class="flex flex-col min-h-screen">
         <!-- Header -->
-        @include('admin.layouts.partials.header')
+        @include('client.layouts.partials.header')
 
         <!-- Contenedor principal  -->
         <div class="flex flex-1 min-h-0">
             <!-- Sidebar -->
-            @include('admin.layouts.partials.sidebar')
+            @include('client.layouts.partials.sidebar')
             <!-- Contenido principal -->
             <div class="flex-1 flex flex-col overflow-hidden">
                 <main class="flex-1 overflow-x-hidden overflow-y-auto p-4 md:p-6">
