@@ -151,7 +151,7 @@
                                 Celular
                             </x-table-header>
                             <x-table-header>
-                                Credenciales API
+                                Credenciales Sistema
                             </x-table-header>
                             <x-table-header sortable field="created_at">
                                 Fecha Registro
@@ -238,7 +238,7 @@
                                             </svg>
                                         </button>
 
-                                       
+
                                     </div>
                                 </td>
                             </tr>
@@ -362,7 +362,7 @@
             if (confirm('¿Estás seguro de que deseas regenerar el token API? El token actual dejará de funcionar.')) {
                 const csrfToken = document.querySelector('meta[name="csrf-token"]');
 
-               
+
             }
         }
 

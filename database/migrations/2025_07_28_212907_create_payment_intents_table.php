@@ -11,7 +11,8 @@ return new class extends Migration {
     public function up(): void
     {
         Schema::create('payment_intents', function (Blueprint $table) {
-            $table->id();
+            $table->uuid('id')->primary();
+            $table->string('public_id', 20)->unique();
             $table->foreignId('cashier_id')->constrained('cashiers')->onDelete('cascade');
             $table->foreignId('currency_id')->constrained('currencies')->onDelete('cascade');
             $table->string('stripe_payment_intent_id')->unique();

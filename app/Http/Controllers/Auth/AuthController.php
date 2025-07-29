@@ -31,9 +31,18 @@ class AuthController extends Controller
             'password' => ['required'],
         ]);
 
-        if (Auth::attempt($credentials, $request->boolean('remember'))) {
+        // if (Auth::attempt($credentials, $request->boolean('remember'))) {
+        //     $request->session()->regenerate();
+        //     return redirect()->intended(route('admin.dashboard'));
+        // }
+        if (Auth::attempt($credentials, $request->filled('remember'))) {
             $request->session()->regenerate();
-            return redirect()->intended(route('admin.dashboard'));
+            if (Auth::user()->isAdmin()) {
+                return redirect()->intended(route('admin.dashboard'));
+            } elseif (Auth::user()->isClient()) {
+                return redirect()->intended(route('client.dashboard'));
+            }
+            // return redirect()->intended('/dashboard');
         }
 
         throw ValidationException::withMessages([

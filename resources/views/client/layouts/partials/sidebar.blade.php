@@ -41,23 +41,7 @@
                 <span>Dashboard del Cliente</span>
             </a>
         @endif
-
-
-        @if (Auth::user()->isClient())
-            <!-- Dashboard del Cliente -->
-            <a href="{{ route('client.devices.index') }}"
-                class="{{ request()->routeIs('client.dashboard') ? 'bg-teal-500/20 text-white border border-teal-500/30' : 'text-gray-300 hover:bg-navy-700/70 hover:text-white' }} flex items-center px-4 py-3 rounded-lg transition-all duration-200 group">
-                <svg xmlns="http://www.w3.org/2000/svg"
-                    class="h-5 w-5 mr-3 {{ request()->routeIs('client.dashboard') ? 'text-teal-400' : 'text-gray-400 group-hover:text-teal-400' }} transition-colors duration-200"
-                    fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                        d="M12 8v4m0 0v4m0-4h4m-4 0H8m6 6H6a2 2 0 01-2-2V6a2 2 0 012-2h12a2 2 0 012 2v12a2 2 0 01-2 2h-6z" />
-                </svg>
-                <span>Cajas</span>
-            </a>
-        @endif
-
-
+       
         @if (Auth::user()->isAdmin())
             <!-- GESTIÓN DE COMERCIOS -->
             <div class="border-t border-navy-700/50 my-3"></div>

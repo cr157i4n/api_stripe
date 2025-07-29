@@ -30,7 +30,7 @@
                 @method('PUT')
             @endif
 
-            <!-- Información del Comercio -->
+           <!-- Información del Comercio -->
             <div class="mb-8">
                 <h4 class="text-md font-semibold text-gray-900 mb-4 flex items-center">
                     <svg class="w-5 h-5 mr-2 text-navy-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -105,6 +105,83 @@
                         @error('address')
                             <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                         @enderror
+                    </div>
+
+                    <!-- NUEVOS CAMPOS DE CAJAS REGISTRADORAS -->
+                    
+                    <!-- Cantidad Máxima de Cajas -->
+                    <div>
+                        <label for="max_cash_registers" class="block text-sm font-medium text-gray-700 mb-2">
+                            Cajas Permitidas <span class="text-red-500">*</span>
+                        </label>
+                        <div class="relative">
+                            <input type="number" 
+                                   id="max_cash_registers" 
+                                   name="max_cash_registers" 
+                                   value="{{ old('max_cash_registers', $commerce->max_cash_registers ?? 1) }}"
+                                   min="1" 
+                                   max="50"
+                                   class="w-full px-3 py-2 pr-10 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-navy-500 focus:border-navy-500 @error('max_cash_registers') border-red-500 @enderror"
+                                   placeholder="Ej: 5"
+                                   required>
+                            <div class="absolute inset-y-0 right-0 flex items-center pr-3">
+                                <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"/>
+                                </svg>
+                            </div>
+                        </div>
+                        @error('max_cash_registers')
+                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                        @enderror
+                        <p class="mt-1 text-xs text-gray-500">
+                            Máximo de cajas que podrá usar (1-50)
+                        </p>
+                    </div>
+
+                    <!-- Cajas Actualmente Activas -->
+                    <div>
+                        <label for="active_cash_registers" class="block text-sm font-medium text-gray-700 mb-2">
+                            Cajas Activas
+                        </label>
+                        <div class="relative">
+                            <input type="number" 
+                                   id="active_cash_registers" 
+                                   name="active_cash_registers" 
+                                   value="{{ old('active_cash_registers', $commerce->active_cash_registers ?? 0) }}"
+                                   min="0" 
+                                   max="50"
+                                   class="w-full px-3 py-2 pr-10 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-navy-500 focus:border-navy-500 @error('active_cash_registers') border-red-500 @enderror"
+                                   placeholder="Ej: 2">
+                            <div class="absolute inset-y-0 right-0 flex items-center pr-3">
+                                <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                </svg>
+                            </div>
+                        </div>
+                        @error('active_cash_registers')
+                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                        @enderror
+                        <p class="mt-1 text-xs text-gray-500">
+                            Cajas actualmente en uso
+                        </p>
+                    </div>
+                </div>
+                
+                <!-- Información adicional sobre las cajas -->
+                <div class="mt-4 bg-amber-50 border border-amber-200 rounded-lg p-4">
+                    <div class="flex">
+                        <svg class="w-5 h-5 text-amber-600 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                        </svg>
+                        <div class="ml-3">
+                            <h5 class="text-sm font-medium text-amber-800">Información sobre las cajas registradoras</h5>
+                            <ul class="mt-1 text-xs text-amber-700 space-y-1">
+                                <li>• El número de cajas permitidas define cuántas pueden estar registradas</li>
+                                <li>• Las cajas activas son las que están funcionando actualmente</li>
+                                <li>• El comercio podrá activar/desactivar cajas según su operación</li>
+                                <li>• Cada caja puede generar QR de pago de forma independiente</li>
+                            </ul>
+                        </div>
                     </div>
                 </div>
             </div>
