@@ -76,15 +76,15 @@ class PaymentController extends Controller
                     'exp_month' => $paymentMethod->card->exp_month ?? 'N/A',
                     'exp_year' => $paymentMethod->card->exp_year ?? 'N/A',
                     'country' => $paymentMethod->card->country ?? 'N/A',
-                    'funding' => $paymentMethod->card->funding ?? 'N/A'
-                ]
+                    'funding' => $paymentMethod->card->funding ?? 'N/A',
+                ],
             ];
             return response()->json($response);
         } catch (\Exception $e) {
             return response()->json(['error' => $e->getMessage()], 500);
         }
     }
-    
+
     public function createPaymentLink(Request $request)
     {
         try {
@@ -121,51 +121,148 @@ class PaymentController extends Controller
         }
     }
 
-   public function storePaymentDetails(Request $request)
+
+    public function cancelPaymentIntent(Request $request)
     {
         try {
             $data = $request->validate([
                 'payment_intent_id' => 'required|string',
-                'payment_method_id' => 'required|string',
-                'card_brand' => 'required|string',
-                'card_last4' => 'required|string',
-                'card_exp_month' => 'required|integer',
-                'card_exp_year' => 'required|integer',
-                'card_country' => 'required|string',
-                'card_funding' => 'required|string',
-                'amount' => 'required|numeric',
-                'currency' => 'required|string',
-                'status' => 'required|string',
-                'description' => 'string|max:255|nullable',
+                'original_payment_intent_id' => 'string|nullable',
             ]);
+            $paymentIntent = PaymentIntent::retrieve($data['payment_intent_id']);
+            if ($paymentIntent->status !== 'canceled') {
+                $paymentIntent->cancel();
+            }
 
-            $tarjeta = json_encode([
-                'brand' => $data['card_brand'],
-                'last4' => $data['card_last4'],
-                'exp_month' => $data['card_exp_month'],
-                'exp_year' => $data['card_exp_year'],
-                'country' => $data['card_country'],
-                'funding' => $data['card_funding'],
-            ]);
+            $searchId = $data['original_payment_intent_id'] ?? $data['payment_intent_id'];
+            $payment = \App\Models\Pago_Solicitude::where('id_stripe', $searchId)->first();
 
-            $idCaja = 1;
+            if ($payment) {
+                $payment->update([
+                    'state' => 'PENDING',
+                    'id_stripe' => $data['payment_intent_id'],
+                    'tarjeta' => null,
+                ]);
+            } else {
+                $newPayment = \App\Models\Pago_Solicitude::create([
+                    'state' => 'PENDING',
+                    'amount' => (int)($paymentIntent->amount),
+                    'description' => $paymentIntent->metadata['description'] ?? 'Sin descripción',
+                    'type_coin' => $paymentIntent->currency,
+                    'tarjeta' => null,
+                    'id_caja' => 4,
+                    'id_stripe' => $data['payment_intent_id'],
+                ]);
+            }
 
-            \App\Models\Pago_Solicitude::create([
-                'state' => $data['status'],
-                'amount' => $data['amount'],
-                'description' => $data['description'],
-                'type_coin' => $data['currency'],
-                'tarjeta' => $tarjeta,
-                'id_caja' => $idCaja,
-                'id_stripe' => $data['payment_intent_id'],
-            ]);
-
-            return response()->json(['success' => true]);
+            return response()->json(['success' => true, 'message' => 'Transacción cancelada y marcada como pendiente']);
         } catch (\Exception $e) {
-            Log::error('Error storing payment details: ' . $e->getMessage());
             return response()->json(['success' => false, 'error' => $e->getMessage()], 500);
         }
     }
+
+    public function resumePaymentIntent(Request $request)
+{
+    try {
+        $data = $request->validate([
+            'payment_intent_id' => 'required|string',
+        ]);
+
+        $payment = \App\Models\Pago_Solicitude::where('id_stripe', $data['payment_intent_id'])->first();
+        if (!$payment || $payment->state !== 'PENDING') {
+            return response()->json(['success' => false, 'error' => 'La transacción no está en estado pendiente'], 400);
+        }
+
+        $paymentIntent = PaymentIntent::create([
+            'amount' => $payment->amount,
+            'currency' => $payment->type_coin,
+            'payment_method_types' => ['card_present'],
+            'capture_method' => 'automatic',
+            'metadata' => [
+                'source' => 'tap_to_pay',
+                'environment' => config('app.env') === 'local' ? 'test' : 'live',
+                'description' => $payment->description,
+                'original_payment_intent_id' => $data['payment_intent_id'],
+            ],
+        ]);
+
+        $payment->update([
+            'id_stripe' => $paymentIntent->id,
+        ]);
+
+
+        return response()->json([
+            'success' => true,
+            'client_secret' => $paymentIntent->client_secret,
+            'original_payment_intent_id' => $data['payment_intent_id'],
+        ]);
+    } catch (\Exception $e) {
+        return response()->json(['success' => false, 'error' => $e->getMessage()], 500);
+    }
+}
+
+        public function storePaymentDetails(Request $request)
+        {
+            try {
+                $data = $request->validate([
+                    'payment_intent_id' => 'required|string',
+                    'payment_method_id' => 'string|nullable',
+                    'card_brand' => 'string|nullable',
+                    'card_last4' => 'string|nullable',
+                    'card_exp_month' => 'integer|nullable',
+                    'card_exp_year' => 'integer|nullable',
+                    'card_country' => 'string|nullable',
+                    'card_funding' => 'string|nullable',
+                    'amount' => 'required|numeric',
+                    'currency' => 'required|string',
+                    'status' => 'required|string',
+                    'description' => 'string|max:255|nullable',
+                    'original_payment_intent_id' => 'string|nullable',
+                ]);
+
+                $tarjeta = null;
+                if ($data['card_brand'] && $data['card_last4']) {
+                    $tarjeta = json_encode([
+                        'brand' => $data['card_brand'],
+                        'last4' => $data['card_last4'],
+                        'exp_month' => $data['card_exp_month'] ?? null,
+                        'exp_year' => $data['card_exp_year'] ?? null,
+                        'country' => $data['card_country'] ?? null,
+                        'funding' => $data['card_funding'] ?? null,
+                    ]);
+                }
+
+                $idCaja = 4;
+                $searchId = $data['original_payment_intent_id'] ?? $data['payment_intent_id'];
+                $payment = \App\Models\Pago_Solicitude::where('id_stripe', $searchId)->first();
+
+                if ($payment) {
+                    $payment->update([
+                        'state' => $data['status'],
+                        'amount' => (int)($data['amount'] * 100),
+                        'description' => $data['description'],
+                        'type_coin' => $data['currency'],
+                        'tarjeta' => $tarjeta,
+                        'id_caja' => $idCaja,
+                        'id_stripe' => $data['payment_intent_id'],
+                    ]);
+                } else {
+                    $newPayment = \App\Models\Pago_Solicitude::create([
+                        'state' => $data['status'],
+                        'amount' => (int)($data['amount'] * 100),
+                        'description' => $data['description'],
+                        'type_coin' => $data['currency'],
+                        'tarjeta' => $tarjeta,
+                        'id_caja' => $idCaja,
+                        'id_stripe' => $data['payment_intent_id'],
+                    ]);
+                }
+
+                return response()->json(['success' => true]);
+            } catch (\Exception $e) {
+                return response()->json(['success' => false, 'error' => $e->getMessage()], 500);
+            }
+        }
 
     public function getPaymentHistory(Request $request)
     {
@@ -176,13 +273,15 @@ class PaymentController extends Controller
                 return [
                     'id_stripe' => $payment->id_stripe,
                     'date' => $payment->created_at->format('Y-m-d H:i:s'),
-                    'status' => $payment->state
+                    'status' => $payment->state,
+                    'amount' => $payment->amount / 100,
+                    'currency' => $payment->type_coin,
+                    'description' => $payment->description ?? 'Sin descripción',
                 ];
             })->values();
 
             return response()->json(['payments' => $paymentList]);
         } catch (\Exception $e) {
-            Log::error('Error fetching payment history: ' . $e->getMessage());
             return response()->json(['error' => $e->getMessage()], 500);
         }
     }

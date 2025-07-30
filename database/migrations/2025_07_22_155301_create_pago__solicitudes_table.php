@@ -15,11 +15,11 @@ return new class extends Migration
             $table->id();
             $table->string('state');
             $table->integer('amount');
-            $table->text('description') -> nullable();
+            $table->text('description')->nullable();
             $table->string('type_coin');
-            $table->json('tarjeta') -> nullable(); 
+            $table->json('tarjeta')->nullable();
             $table->foreignId('id_caja')->constrained('cajas')->onDelete('cascade');
-            $table->string('id_stripe') -> nullable();
+            $table->string('id_stripe')->nullable()->unique();
             $table->timestamps();
         });
     }
